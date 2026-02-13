@@ -1,11 +1,20 @@
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.DASHSCOPE_API_KEY,
-  baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-});
+// Lazy-init: avoid crashing at build time when env vars are not yet available
+let _client: OpenAI | null = null;
+function getClient(): OpenAI {
+  if (!_client) {
+    _client = new OpenAI({
+      apiKey: process.env.DASHSCOPE_API_KEY || "placeholder",
+      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    });
+  }
+  return _client;
+}
 
-const LLM_MODEL = process.env.DASHSCOPE_MODEL || "qwen-plus";
+function getLLMModel(): string {
+  return process.env.DASHSCOPE_MODEL || "qwen-plus";
+}
 
 const COACH_SYSTEM_PROMPT = `你是一个温暖的精力教练，名叫「知秋」，是「留白」App 的 AI 伙伴。
 
@@ -84,14 +93,14 @@ export function streamCheckInResponse(
       const requestId = Math.random().toString(36).slice(2, 8);
 
       console.log(`[LLM][${requestId}] ▶ 模型调用开始`);
-      console.log(`[LLM][${requestId}]   模型: ${LLM_MODEL}`);
+      console.log(`[LLM][${requestId}]   模型: ${getLLMModel()}`);
       console.log(`[LLM][${requestId}]   精力等级: ${level}`);
       console.log(`[LLM][${requestId}]   今日已记录: ${todayCheckIns.length} 次`);
       console.log(`[LLM][${requestId}]   历史摘要: ${recentSummaries.length} 天`);
 
       try {
-        const stream = await client.chat.completions.create({
-          model: LLM_MODEL,
+        const stream = await getClient().chat.completions.create({
+          model: getLLMModel(),
           messages: [
             { role: "system", content: COACH_SYSTEM_PROMPT },
             { role: "user", content: context },
@@ -154,12 +163,12 @@ export async function generateCheckInResponse(
   const requestId = Math.random().toString(36).slice(2, 8);
 
   console.log(`[LLM][${requestId}] ▶ 模型调用开始 (非流式)`);
-  console.log(`[LLM][${requestId}]   模型: ${LLM_MODEL}`);
+  console.log(`[LLM][${requestId}]   模型: ${getLLMModel()}`);
   console.log(`[LLM][${requestId}]   精力等级: ${level}`);
 
   try {
-    const response = await client.chat.completions.create({
-      model: LLM_MODEL,
+    const response = await getClient().chat.completions.create({
+      model: getLLMModel(),
       messages: [
         { role: "system", content: COACH_SYSTEM_PROMPT },
         { role: "user", content: context },
@@ -247,12 +256,12 @@ ${weeklySummaries
 控制在 150 字以内。`;
 
   console.log(`[LLM][${requestId}] ▶ 周报生成开始`);
-  console.log(`[LLM][${requestId}]   模型: ${LLM_MODEL}`);
+  console.log(`[LLM][${requestId}]   模型: ${getLLMModel()}`);
   console.log(`[LLM][${requestId}]   数据天数: ${weeklySummaries.length}`);
 
   try {
-    const response = await client.chat.completions.create({
-      model: LLM_MODEL,
+    const response = await getClient().chat.completions.create({
+      model: getLLMModel(),
       messages: [
         { role: "system", content: COACH_SYSTEM_PROMPT },
         { role: "user", content: context },
