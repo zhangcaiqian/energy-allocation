@@ -7,13 +7,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSeedling } from "@fortawesome/free-solid-svg-icons";
+import { faSeedling, faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,16 +31,31 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError("邮箱或密码不正确");
+        setLoading(false);
       } else {
+        setRedirecting(true);
         router.push("/");
         router.refresh();
+        // Keep loading state until page navigates
+        return;
       }
     } catch {
       setError("登录失败，请稍后重试");
-    } finally {
       setLoading(false);
     }
   };
+
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
+        <FontAwesomeIcon icon={faSeedling} className="text-4xl text-[#6b9b7a] mb-4 animate-pulse" />
+        <p className="text-sm text-[#7a7a7a]">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-1.5" />
+          正在进入花园...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6">

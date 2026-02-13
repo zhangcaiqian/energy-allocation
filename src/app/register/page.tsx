@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLeaf } from "@fortawesome/free-solid-svg-icons";
+import { faLeaf, faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,6 +34,7 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         setError(data.error || "注册失败");
+        setLoading(false);
         return;
       }
 
@@ -46,15 +48,30 @@ export default function RegisterPage() {
       if (result?.error) {
         router.push("/login");
       } else {
+        setRedirecting(true);
         router.push("/");
         router.refresh();
+        // Don't setLoading(false) — keep loading state until page navigates
+        return;
       }
     } catch {
       setError("注册失败，请稍后重试");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
+
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
+        <FontAwesomeIcon icon={faLeaf} className="text-4xl text-[#6b9b7a] mb-4 animate-pulse" />
+        <p className="text-[#2d2d2d] font-medium">注册成功</p>
+        <p className="text-sm text-[#7a7a7a] mt-1">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-1.5" />
+          正在进入花园...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6">

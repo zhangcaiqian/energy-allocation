@@ -20,16 +20,16 @@
 
 ## 技术栈
 
-| 层级 | 技术 |
-|------|------|
-| 框架 | Next.js 16 (App Router) |
-| 样式 | TailwindCSS + 自定义组件 |
+| 层级    | 技术                                  |
+| ------- | ------------------------------------- |
+| 框架    | Next.js 16 (App Router)               |
+| 样式    | TailwindCSS + 自定义组件              |
 | 3D 场景 | React Three Fiber + @react-three/drei |
-| 数据库 | Turso (SQLite) + Drizzle ORM |
-| 认证 | Auth.js (邮箱 + 密码) |
-| LLM | 通义千问 (DashScope API，OpenAI 兼容) |
-| 部署 | Vercel |
-| 包管理 | pnpm |
+| 数据库  | Turso (SQLite) + Drizzle ORM          |
+| 认证    | Auth.js (邮箱 + 密码)                 |
+| LLM     | 通义千问 (DashScope API，OpenAI 兼容) |
+| 部署    | Vercel                                |
+| 包管理  | pnpm                                  |
 
 ## 快速开始
 
@@ -140,6 +140,9 @@ turso db create liubai
 # 获取连接信息
 turso db show liubai --url
 turso db tokens create liubai
+
+# 建表
+pnpm drizzle-kit push
 ```
 
 ## 文档
