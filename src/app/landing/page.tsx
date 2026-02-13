@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -144,6 +145,8 @@ function FeatureCard({
 // ============================================================
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
   useEffect(() => {
     setMounted(true);
@@ -222,20 +225,34 @@ export default function LandingPage() {
             transform: mounted ? 'translateY(0)' : 'translateY(15px)',
           }}
         >
-          <Link href="/register">
-            <Button
-              size="lg"
-              className="w-full text-[15px] shadow-md shadow-[#6b9b7a]/15"
-            >
-              开始留白之旅
-              <FontAwesomeIcon icon={faArrowRight} className="ml-2 text-sm" />
-            </Button>
-          </Link>
-          <Link href="/login">
-            <Button variant="outline" size="lg" className="w-full text-[15px]">
-              已有账号，登录
-            </Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/">
+              <Button
+                size="lg"
+                className="w-full text-[15px] shadow-md shadow-[#6b9b7a]/15"
+              >
+                回到花园
+                <FontAwesomeIcon icon={faArrowRight} className="ml-2 text-sm" />
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/register">
+                <Button
+                  size="lg"
+                  className="w-full text-[15px] shadow-md shadow-[#6b9b7a]/15"
+                >
+                  开始留白之旅
+                  <FontAwesomeIcon icon={faArrowRight} className="ml-2 text-sm" />
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" size="lg" className="w-full text-[15px]">
+                  已有账号，登录
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
