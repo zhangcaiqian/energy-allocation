@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- EnsM  incomplete circle, the gap is Y} -->
+  <path
+    d="M 48 21 A 19 19 0 1 0 43 15.5"
+    stroke="#6b9b7a"
+    stroke-width="3.2"
+    stroke-linecap="round"
+  />
+  <!-- Leaf sprouting from the gap  growth from awareness -->
+  <path
+    d="M 43 15.5 C 38 5.5 28.5 4.5 30.5 13 C 33 7 38.5 8.5 43 15.5Z"
+    fill="#6b9b7a"
+  />
+  <!-- Leaf vein -->
+  <path
+    d="M 42 14.5 C 38 9 33 8 31.5 11"
+    stroke="#faf9f6"
+    stroke-width="0.6"
+    stroke-linecap="round"
+    opacity="0.5"
+  />
+</svg>

@@ -1,14 +1,26 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSeedling, faPenToSquare, faSun, faMoon, faCloudSun, faCloud } from "@fortawesome/free-solid-svg-icons";
-import { faFaceSmile, faFaceMeh, faFaceFrown, faFaceTired } from "@fortawesome/free-regular-svg-icons";
+import {
+  faSeedling,
+  faPenToSquare,
+  faSun,
+  faMoon,
+  faCloudSun,
+  faCloud,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  faFaceSmile,
+  faFaceMeh,
+  faFaceFrown,
+  faFaceTired,
+} from "@fortawesome/free-regular-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 // Lazy load 3D garden for performance
@@ -17,7 +29,7 @@ const GardenScene = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full aspect-square max-h-[360px] rounded-2xl bg-gradient-to-b from-[#e8f3ec] to-[#d4e8da] flex items-center justify-center">
+      <div className="w-full aspect-[4/3] max-h-[400px] rounded-2xl bg-gradient-to-b from-[#e8f3ec] to-[#d4e8da] flex items-center justify-center">
         <p className="text-[#6b9b7a] text-sm animate-pulse">花园加载中...</p>
       </div>
     ),
@@ -55,7 +67,7 @@ const ENERGY_SCORES: Record<string, number> = {
 export default function HomePage() {
   const { data: session } = useSession();
   const [todayCheckIns, setTodayCheckIns] = useState<CheckIn[]>([]);
-  const [energyLevel, setEnergyLevel] = useState(0.65);
+  const [energyLevel, setEnergyLevel] = useState<number | null>(null);
   const [reserveRatio, setReserveRatio] = useState(0.3);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +78,7 @@ export default function HomePage() {
         fetch("/api/settings"),
       ]);
 
-      let newEnergy = 0.65;
+      let newEnergy: number | null = null;
       let newRatio = 0.3;
       let newCheckIns: CheckIn[] = [];
 
@@ -75,11 +87,9 @@ export default function HomePage() {
         newCheckIns = data.todayCheckIns || [];
 
         if (newCheckIns.length > 0) {
-          const scores = newCheckIns.map(
-            (c: CheckIn) => ENERGY_SCORES[c.level] || 0.5
-          );
-          newEnergy =
-            scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
+          // 以最近一次记录为准，反映当下状态
+          const latestLevel = newCheckIns[0].level;
+          newEnergy = ENERGY_SCORES[latestLevel] ?? 0.5;
         }
       }
 
@@ -88,7 +98,6 @@ export default function HomePage() {
         newRatio = data.user?.energyReserveRatio || 0.3;
       }
 
-      // Batch all state updates together to minimize re-renders
       setTodayCheckIns(newCheckIns);
       setEnergyLevel(newEnergy);
       setReserveRatio(newRatio);
@@ -105,6 +114,7 @@ export default function HomePage() {
 
   const greeting = getGreeting();
   const latestResponse = todayCheckIns[0]?.aiResponse;
+  const hasRecords = todayCheckIns.length > 0;
 
   return (
     <div className="px-4 pt-6 space-y-5">
@@ -119,33 +129,52 @@ export default function HomePage() {
             {session?.user?.name || "你好"}
           </h1>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-[#b5b0a8]">今日记录</p>
-          <p className="text-lg font-bold text-[#6b9b7a]">
-            {todayCheckIns.length} 次
-          </p>
-        </div>
+        {hasRecords && (
+          <div className="text-right">
+            <p className="text-xs text-[#b5b0a8]">今日记录</p>
+            <p className="text-lg font-bold text-[#6b9b7a]">
+              {todayCheckIns.length} 次
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 3D Garden */}
-      <GardenScene energyLevel={energyLevel} reserveRatio={reserveRatio} />
+      <GardenScene
+        energyLevel={energyLevel ?? 0.5}
+        reserveRatio={reserveRatio}
+      />
 
-      {/* Energy Summary */}
-      <div className="flex items-center justify-center gap-2">
-        <span className="text-sm text-[#7a7a7a]">当前精力</span>
-        <span className="text-2xl font-bold text-[#2d2d2d]">
-          {Math.round(energyLevel * 100)}%
-        </span>
-        <span className="text-xs text-[#b5b0a8]">
-          保留线 {Math.round(reserveRatio * 100)}%
-        </span>
-      </div>
+      {/* Energy Summary — only show when there are records */}
+      {hasRecords && energyLevel !== null ? (
+        <div className="flex items-center justify-center gap-2">
+          <FontAwesomeIcon
+            icon={levelIcons[todayCheckIns[0].level]?.icon || faFaceMeh}
+            className={`text-lg ${levelIcons[todayCheckIns[0].level]?.color || "text-[#b5b0a8]"}`}
+          />
+          <span className="text-sm text-[#7a7a7a]">当前精力</span>
+          <span className="text-2xl font-bold text-[#2d2d2d]">
+            {Math.round(energyLevel * 100)}%
+          </span>
+          <span className="text-xs text-[#b5b0a8]">
+            保留线 {Math.round(reserveRatio * 100)}%
+          </span>
+        </div>
+      ) : (
+        !loading && (
+          <div className="text-center py-2">
+            <p className="text-sm text-[#b5b0a8]">
+              花园在等待你的觉察
+            </p>
+          </div>
+        )
+      )}
 
       {/* Check-in Button */}
       <Link href="/check-in">
         <Button size="lg" className="w-full text-base">
           <FontAwesomeIcon icon={faPenToSquare} className="mr-2" />
-          记录一下精力状态
+          {hasRecords ? "再记录一次" : "开始今天的第一次觉察"}
         </Button>
       </Link>
 
@@ -154,7 +183,10 @@ export default function HomePage() {
         <Card className="bg-[#f8f7f4] border-[#e8e5e0]">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <FontAwesomeIcon icon={faSeedling} className="text-xl text-[#6b9b7a] mt-1" />
+              <FontAwesomeIcon
+                icon={faSeedling}
+                className="text-xl text-[#6b9b7a] mt-1"
+              />
               <div>
                 <p className="text-xs text-[#b5b0a8] mb-1">知秋说</p>
                 <p className="text-sm text-[#2d2d2d] leading-relaxed">
@@ -167,9 +199,11 @@ export default function HomePage() {
       )}
 
       {/* Today Timeline */}
-      {todayCheckIns.length > 0 && (
+      {hasRecords && (
         <div>
-          <h2 className="text-sm font-medium text-[#7a7a7a] mb-3">今日记录</h2>
+          <h2 className="text-sm font-medium text-[#7a7a7a] mb-3">
+            今日记录
+          </h2>
           <div className="space-y-2">
             {todayCheckIns.map((checkIn) => (
               <div
@@ -195,10 +229,13 @@ export default function HomePage() {
       )}
 
       {/* Empty state */}
-      {!loading && todayCheckIns.length === 0 && (
+      {!loading && !hasRecords && (
         <Card className="bg-[#f8f7f4] border-dashed border-[#d4d0c8]">
           <CardContent className="p-6 text-center">
-            <FontAwesomeIcon icon={faSeedling} className="text-3xl text-[#6b9b7a] mb-2" />
+            <FontAwesomeIcon
+              icon={faSeedling}
+              className="text-3xl text-[#6b9b7a] mb-2"
+            />
             <p className="text-sm text-[#7a7a7a]">
               今天还没有记录，去记录一下吧
             </p>

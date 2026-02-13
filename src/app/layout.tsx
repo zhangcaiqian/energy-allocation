@@ -6,6 +6,9 @@ import { AuthProvider } from "@/components/auth-provider";
 export const metadata: Metadata = {
   title: "留白 — 你的精力觉察伙伴",
   description: "像管理资产一样管理精力，在忙碌中留出呼吸的空间。",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

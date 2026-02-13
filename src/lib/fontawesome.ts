@@ -32,6 +32,7 @@ import {
   faCalendarDay,
   faFire,
   faSpinner,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faFaceSmile,
@@ -74,6 +75,7 @@ library.add(
   faCalendarDay,
   faFire,
   faSpinner,
+  faArrowRight,
   faFaceSmile,
   faFaceMeh,
   faFaceFrown,

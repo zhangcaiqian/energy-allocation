@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  Legend,
 } from "recharts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -163,9 +164,16 @@ export default function TrendsPage() {
                     fontSize: 11,
                   }}
                 />
+                <Legend
+                  verticalAlign="top"
+                  align="right"
+                  iconType="line"
+                  wrapperStyle={{ fontSize: "11px", paddingBottom: "8px" }}
+                />
                 <Line
                   type="monotone"
                   dataKey="avg"
+                  name="日均精力"
                   stroke="#6b9b7a"
                   strokeWidth={2.5}
                   dot={{ fill: "#6b9b7a", r: 3 }}
@@ -174,6 +182,7 @@ export default function TrendsPage() {
                 <Line
                   type="monotone"
                   dataKey="min"
+                  name="当日最低"
                   stroke="#e8943a"
                   strokeWidth={1}
                   strokeDasharray="3 3"

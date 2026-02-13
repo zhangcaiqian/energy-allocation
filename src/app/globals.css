@@ -44,3 +44,16 @@ body {
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
+
+/* Landing page animations */
+@keyframes landing-float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25%      { transform: translateY(-15px) translateX(8px); }
+  50%      { transform: translateY(-5px) translateX(-6px); }
+  75%      { transform: translateY(-20px) translateX(4px); }
+}
+
+@keyframes landing-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
