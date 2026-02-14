@@ -70,6 +70,11 @@ export default function HomePage() {
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
   const [reserveRatio, setReserveRatio] = useState(0.3);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -112,7 +117,9 @@ export default function HomePage() {
     fetchData();
   }, [fetchData]);
 
-  const greeting = getGreeting();
+  // Only compute greeting on client to avoid SSR/hydration mismatch
+  // (Vercel server is UTC, user is Asia/Shanghai)
+  const greeting = mounted ? getGreeting() : { text: "", icon: faSun };
   const latestResponse = todayCheckIns[0]?.aiResponse;
   const hasRecords = todayCheckIns.length > 0;
 

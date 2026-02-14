@@ -7,7 +7,7 @@ import {
 } from "@/db/schema";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import { format, subDays } from "date-fns";
+import { getUserToday, getUserNow } from "@/lib/utils";
 
 export function getEnergyScore(level: EnergyLevel): number {
   return ENERGY_SCORES[level] ?? 0.5;
@@ -34,7 +34,7 @@ export function getEnergyEmoji(level: EnergyLevel): string {
 }
 
 export async function getTodayCheckIns(userId: string) {
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = await getUserToday(); // User timezone (from cookie)
   return db
     .select()
     .from(energyCheckIns)
@@ -53,7 +53,11 @@ export async function getRecentDailySummaries(
   userId: string,
   days: number = 7
 ) {
-  const startDate = format(subDays(new Date(), days), "yyyy-MM-dd");
+  // Calculate start date in user timezone
+  const userNow = await getUserNow();
+  const startMs = userNow.getTime() - days * 24 * 60 * 60 * 1000;
+  const startD = new Date(startMs);
+  const startDate = `${startD.getFullYear()}-${String(startD.getMonth() + 1).padStart(2, "0")}-${String(startD.getDate()).padStart(2, "0")}`;
   return db
     .select()
     .from(dailyEnergySummaries)

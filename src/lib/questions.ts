@@ -1,3 +1,5 @@
+import { getUserHour } from "@/lib/utils";
+
 export interface CheckInQuestion {
   id: string;
   period: "morning" | "noon" | "evening" | "night";
@@ -11,8 +13,9 @@ export const PERIODS = {
   night: { start: "21:00", end: "23:59" },
 } as const;
 
-export function getCurrentPeriod(): "morning" | "noon" | "evening" | "night" {
-  const hour = new Date().getHours();
+export async function getCurrentPeriod(): Promise<"morning" | "noon" | "evening" | "night"> {
+  // Use user timezone (from cookie) instead of server timezone (UTC on Vercel)
+  const hour = await getUserHour();
   if (hour >= 7 && hour < 11) return "morning";
   if (hour >= 11 && hour < 15) return "noon";
   if (hour >= 15 && hour < 21) return "evening";

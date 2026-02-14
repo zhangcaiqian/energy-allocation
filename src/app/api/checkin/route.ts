@@ -4,10 +4,10 @@ import { db } from "@/db";
 import { energyCheckIns } from "@/db/schema";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import { format } from "date-fns";
 import { streamCheckInResponse } from "@/lib/llm";
 import { getRecentDailySummaries, upsertDailySummary } from "@/lib/energy";
 import { selectQuestion, getCurrentPeriod } from "@/lib/questions";
+import { getUserToday, getUserDateTime } from "@/lib/utils";
 
 // GET - get today's check-ins and a question
 export async function GET() {
@@ -17,7 +17,7 @@ export async function GET() {
   }
 
   const userId = session.user.id;
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = await getUserToday(); // User timezone (from cookie)
 
   // Get today's check-ins
   const todayCheckIns = await db
@@ -34,7 +34,7 @@ export async function GET() {
     .all();
 
   // Select a question
-  const period = getCurrentPeriod();
+  const period = await getCurrentPeriod();
   const recentIds = todayCheckIns
     .slice(0, 3)
     .map((c) => c.question)
@@ -63,9 +63,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
   }
 
-  const now = new Date();
-  const checkInAt = format(now, "yyyy-MM-dd'T'HH:mm:ss"); // 本地时间，非 UTC
-  const today = format(now, "yyyy-MM-dd");
+  const checkInAt = await getUserDateTime(); // User timezone (from cookie)
+  const today = await getUserToday();
 
   // Get context for LLM
   const todayCheckIns = await db
